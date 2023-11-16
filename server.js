@@ -3,7 +3,7 @@ const app = express();
 app.use(express.json());
 require('dotenv').config();
 let cors = require('cors');
- const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const mariadb = require('mariadb');
 const pool = mariadb.createPool({
     host: process.env.DB_HOST,
@@ -22,63 +22,39 @@ app.get('/api/jeu/', async (req, res) => {
     res.status(200).json(rows);
 });
 
-app.get('/api/utilisateurs', async (req, res) => {
-    console.log("lancement de la connexion");
-    const conn = await pool.getConnection();
-    console.log("lancement de la requete");
-    const rows = await conn.query("SELECT * FROM utilisateurs");
-    console.log(rows);
-    res.status(200).json(rows);
-});
-
-app.get('/api/Utilisateurs/:id', async (req, res) => {
-    console.log("lancement de la connexion");
-    const conn = await pool.getConnection();
-    console.log("lancement de la requete");
-    const rows = await conn.query("SELECT * FROM Utilisateurs WHERE ID_Utilisateur = ?", [req.params.id]);
-    console.log(rows);
-    res.status(200).json(rows);
-});
-
-app.get('/api/utilisateurs', async (req, res) => {
-    console.log("lancement de la connexion");
-    const conn = await pool.getConnection();
-    console.log("lancement de la requete");
-    const rows = await conn.query("SELECT * FROM utilisateurs");
-    console.log(rows);
-    res.status(200).json(rows);
-});
-
-app.get('/api/Utilisateurs/:id', async (req, res) => {
-    console.log("lancement de la connexion");
-    const conn = await pool.getConnection();
-    console.log("lancement de la requete");
-    const rows = await conn.query("SELECT * FROM Utilisateurs WHERE ID_Utilisateur = ?", [req.params.id]);
-    console.log(rows);
-    res.status(200).json(rows);
-});
-
 app.post('/api/utilisateurs/', async (req, res) => {
     console.log(req.body);
-   try {
-       const { email, mot_de_passe, nom, prenom } = req.body;
 
-       if (!nom ||!email || !mot_de_passe ) {
-           return res.status(400).json({ error: 'nom, email, password, are required.' });
-       }
+    try {
+        const { Nom_Utilisateur, Email, Mot_de_passe } = req.body;
 
-       const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+        if (!Nom_Utilisateur || !Email || !Mot_de_passe) {
+            return res.status(400).json({ error: 'Nom_Utilisateur, email, and Mot_de_passe are required.' });
+        }
 
-       const conn = await pool.getConnection();
-       const result = await conn.query('INSERT INTO Utilisateurs (nom_Utilisateur, Email, Mot_de_passe) VALUES (?, ?, ?, ?)', [ nom,email,hashedPassword]);
+        const hashedPassword = await bcrypt.hash(Mot_de_passe, 10);
 
-       const utilisateurId = Number(result.insertId);
+        const conn = await pool.getConnection();
+        await conn.beginTransaction();
 
-       res.status(201).json({ utilisateur_id: utilisateurId, message: 'User created successfully.' });
-   } catch (err) {
-       console.error(err);
-       res.status(500).send('Internal Server Error');
-   }
+        try {
+            const result = await conn.query('INSERT INTO Utilisateurs (Nom_Utilisateur, Email, Mot_de_passe) VALUES (?, ?, ?)', [Nom_Utilisateur, Email, hashedPassword]);
+
+            const IDUtilisateur = Number(result.insertId);
+
+            await conn.commit();
+
+            res.status(201).json({ ID_Utilisateur: IDUtilisateur, message: 'User created successfully.' });
+        } catch (error) {
+            await conn.rollback();
+            throw error;
+        } finally {
+            await conn.release();
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 
