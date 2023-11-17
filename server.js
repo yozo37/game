@@ -35,19 +35,51 @@ app.post('/api/utilisateurs/', async (req, res) => {
         const hashedPassword = await bcrypt.hash(Mot_de_passe, 10);
 
         const conn = await pool.getConnection();
-        await conn.beginTransaction();
+        const result = await conn.query('INSERT INTO Utilisateurs (Nom_Utilisateur, Email, Mot_de_passe) VALUES (?, ?, ?)', [Nom_Utilisateur, Email, hashedPassword]);
+
+        const IDUtilisateur = Number(result.insertId);
+
+        await conn.release();
+
+        res.status(201).json({ ID_Utilisateur: IDUtilisateur, message: 'User created successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/api/login', async (req, res) => {
+    try {
+        const { Nom_Utilisateur, Mot_de_passe } = req.body;
+
+        if (!Nom_Utilisateur || !Mot_de_passe) {
+            return res.status(400).json({ error: 'Nom_Utilisateur and Mot_de_passe are required.' });
+        }
+
+        const conn = await pool.getConnection();
 
         try {
-            const result = await conn.query('INSERT INTO Utilisateurs (Nom_Utilisateur, Email, Mot_de_passe) VALUES (?, ?, ?)', [Nom_Utilisateur, Email, hashedPassword]);
+            const result = await conn.query('SELECT * FROM Utilisateurs WHERE Nom_Utilisateur = ?', [Nom_Utilisateur]);
 
-            const IDUtilisateur = Number(result.insertId);
+            console.log('Query Result:', result);
 
-            await conn.commit();
+            if (result.length === 0) {
+                return res.status(401).json({ error: 'Invalid Nom_Utilisateur or Mot_de_passe.' });
+            }
 
-            res.status(201).json({ ID_Utilisateur: IDUtilisateur, message: 'User created successfully.' });
-        } catch (error) {
-            await conn.rollback();
-            throw error;
+            const user = result[0];
+            console.log('Entered Password:', Mot_de_passe);
+            console.log('Stored Hashed Password:', user.Mot_de_passe);
+
+            const isPasswordValid = await bcrypt.compare(Mot_de_passe, user.Mot_de_passe);
+
+            console.log('Password Comparison Result:', isPasswordValid);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Invalid Nom_Utilisateur or Mot_de_passe.' });
+            }
+
+            res.status(200).json({ message: 'Login successful.' });
         } finally {
             await conn.release();
         }
@@ -56,6 +88,7 @@ app.post('/api/utilisateurs/', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 
 app.listen(3000, () => {
