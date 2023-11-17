@@ -1,12 +1,13 @@
-// Jeu.js (votre composant React)
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function Jeu() {
+  // pour stocker la liste complète des jeux, les jeux filtrés et le terme de recherche
   const [jeux, setJeux] = useState([]);
   const [filteredJeux, setFilteredJeux] = useState([]);
   const [nomRecherche, setNomRecherche] = useState('');
 
+  //chargement initial pour récupérer la liste complète des jeux depuis l'API
   useEffect(() => {
     const fetchJeux = async () => {
       try {
@@ -21,6 +22,7 @@ function Jeu() {
     fetchJeux();
   }, []);
 
+  // Fonction pour effectuer la recherche en fonction du nom du jeu
   const handleSearch = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/recherche/${nomRecherche}`);
@@ -30,17 +32,17 @@ function Jeu() {
     }
   };
 
+  // Fonction pour louer un jeu en envoyant une requête POST à l'API avec l'ID du jeu
   const louerJeu = async (jeuId) => {
     try {
-      // Envoyez la requête POST pour louer le jeu avec l'ID du jeu
       await axios.post(`http://localhost:3000/api/locations/${jeuId}`);
-      // Vous pouvez ajouter un message de confirmation ou mettre à jour l'état si nécessaire
       console.log('Jeu loué avec succès!');
     } catch (error) {
       console.error('Erreur lors de la location du jeu :', error);
     }
   };
 
+ 
   return (
     <div>
       <h2>Liste des Jeux</h2>
