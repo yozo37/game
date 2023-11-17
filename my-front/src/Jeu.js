@@ -30,6 +30,17 @@ function Jeu() {
     }
   };
 
+  const louerJeu = async (jeuId) => {
+    try {
+      // Envoyez la requête POST pour louer le jeu avec l'ID du jeu
+      await axios.post(`http://localhost:3000/api/locations/${jeuId}`);
+      // Vous pouvez ajouter un message de confirmation ou mettre à jour l'état si nécessaire
+      console.log('Jeu loué avec succès!');
+    } catch (error) {
+      console.error('Erreur lors de la location du jeu :', error);
+    }
+  };
+
   return (
     <div>
       <h2>Liste des Jeux</h2>
@@ -48,6 +59,7 @@ function Jeu() {
             <th>Nom du Jeu</th>
             <th>Genre</th>
             <th>Date de sortie</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -56,6 +68,9 @@ function Jeu() {
               <td>{jeu.Nom_jeu}</td>
               <td>{jeu.Genre}</td>
               <td>{jeu.Date_sortie}</td>
+              <td>
+                <button onClick={() => louerJeu(jeu.ID_jeu)}>Louer le jeu</button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -65,5 +80,3 @@ function Jeu() {
 }
 
 export default Jeu;
-
-

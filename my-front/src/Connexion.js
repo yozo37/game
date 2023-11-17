@@ -10,23 +10,33 @@ function Connexion() {
 
     const data = { Email, Mot_de_passe };
 
-    axios.post('http://localhost:3000/api/login', data)
-      .then(() => {
-        console.log('Utilisateur connecté');
-        // Ajoutez ici le code pour gérer la connexion réussie, par exemple, redirection vers une nouvelle page.
-      })
-      .catch(error => console.error('Erreur lors de la connexion de l\'utilisateur:', error));
+    try {
+      const response = await axios.post('http://localhost:3000/api/login', data);
+      console.log('Utilisateur connecté');
+      
+      // Stocker les informations de l'utilisateur dans le localStorage
+      localStorage.setItem('utilisateurConnecte', JSON.stringify(response.data));
+      
+    } catch (error) {
+      console.error('Erreur lors de la connexion de l\'utilisateur:', error);
+    }
   };
 
   return (
     <div>
-      Connexion
+      <h2>Connexion</h2>
       <form onSubmit={handleSubmit}>
-        <label>Email</label>
-        <input type="email" required value={Email} onChange={(e) => setEmail(e.target.value)} />
-        <label>Mot de passe</label>
-        <input type="password" required value={Mot_de_passe} onChange={(e) => setMotDePasse(e.target.value)} />
-        <button type="submit">Connexion</button>
+        <p>
+          <label>Email :</label>
+          <input type="email" required value={Email} onChange={(e) => setEmail(e.target.value)} />
+        </p>
+        <p>
+          <label>Mot de passe :</label>
+          <input type="password" required value={Mot_de_passe} onChange={(e) => setMotDePasse(e.target.value)} />
+        </p>
+        <p>
+          <button type="submit">Connexion</button>
+        </p>
       </form>
     </div>
   );

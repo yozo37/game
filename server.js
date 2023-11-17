@@ -93,7 +93,6 @@ app.post('/api/login', async (req, res) => {
         }
 
         const conn = await pool.getConnection();
-
         try {
             const result = await conn.query('SELECT * FROM Utilisateurs WHERE Nom_Utilisateur = ?', [Nom_Utilisateur]);
 
@@ -132,24 +131,23 @@ app.get('/api/locations/', async (req, res) => {
     console.log(rows);
     res.status(200).json(rows);
 });
-// Ajoutez cette route dans votre fichier contenant les routes (par exemple, routes.js)
-app.post('/api/location/:id', async (req, res) => {
-    try {
-      // Supposons que vous recevez ces données du front-end
-      const { ID_Utilisateur, ID_Jeu, Note, Commentaire } = req.body;
+// app.post('/api/locations/:id', async (req, res) => {
+//     try {
+//       // Supposons que vous recevez ces données du front-end
+//       const { ID_Utilisateur, ID_Jeu, Note, Commentaire } = req.body;
   
-      // Ajoutez ces données à la table locations dans la base de données
-      await pool.query(
-        'INSERT INTO locations (ID_Utilisateur, ID_Jeu, Note, Commentaire) VALUES (?, ?, ?, ?)',
-        [ID_Utilisateur, ID_Jeu, Note, Commentaire]
-      );
+//       // Ajoutez ces données à la table locations dans la base de données
+//       await pool.query(
+//         'INSERT INTO locations (ID_Utilisateur, ID_Jeu, Note, Commentaire) VALUES (?, ?, ?, ?)',
+//         [ID_Utilisateur, ID_Jeu, Note, Commentaire]
+//       );
   
-      res.status(201).json({ message: 'Jeu loué avec succès' });
-    } catch (error) {
-      console.error('Erreur lors de la location du jeu :', error);
-      res.status(500).json({ message: 'Erreur lors de la location du jeu' });
-    }
-  });
+//       res.status(201).json({ message: 'Jeu loué avec succès' });
+//     } catch (error) {
+//       console.error('Erreur lors de la location du jeu :', error);
+//       res.status(500).json({ message: 'Erreur lors de la location du jeu' });
+//     }
+//   });
   
 
 
