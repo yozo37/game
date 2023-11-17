@@ -1,6 +1,7 @@
-// Jeu.js (votre composant React)
+// Jeu.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 function Jeu() {
   const [jeux, setJeux] = useState([]);
@@ -62,14 +63,16 @@ function Jeu() {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody> 
           {filteredJeux.map((jeu) => (
             <tr key={jeu.ID_jeu}>
               <td>{jeu.Nom_jeu}</td>
               <td>{jeu.Genre}</td>
               <td>{jeu.Date_sortie}</td>
               <td>
-                <button onClick={() => louerJeu(jeu.ID_jeu)}>Louer le jeu</button>
+                <Link to="/Panier">
+                  <button onClick={() => louerJeu(jeu.ID_jeu)}>Louer le jeu</button>
+                </Link>
               </td>
             </tr>
           ))}
@@ -80,3 +83,4 @@ function Jeu() {
 }
 
 export default Jeu;
+

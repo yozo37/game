@@ -40,7 +40,7 @@ app.get('/api/recherche/:nom', async (req, res) => {
         conn.release();
     }
 });
-
+// Cette route vous permet de récupérer l'ensemble des utilisateurs
 app.get('/api/utilisateurs/', async (req, res) => {
     console.log("lancement de la connexion");
     const conn = await pool.getConnection();
@@ -49,6 +49,7 @@ app.get('/api/utilisateurs/', async (req, res) => {
     console.log(rows);
     res.status(200).json(rows);
 });
+// Cette route vous permet de récupérer un utilisateurs avec son :id
 app.get('/api/utilisateurs/:id', async (req, res) => {
     console.log("lancement de la connexion");
     const conn = await pool.getConnection();
@@ -57,7 +58,7 @@ app.get('/api/utilisateurs/:id', async (req, res) => {
     console.log(rows);
     res.status(200).json(rows);
 })
-
+// Cette route vous permet d'ajouter un utilisateurs
 app.post('/api/utilisateurs/', async (req, res) => {
     console.log(req.body);
 
@@ -83,7 +84,7 @@ app.post('/api/utilisateurs/', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+//Cette route permet de connecter notre utilisateur en comparant avec la base de données
 app.post('/api/login', async (req, res) => {
     try {
         const { Nom_Utilisateur, Mot_de_passe } = req.body;
@@ -123,20 +124,17 @@ app.post('/api/login', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-app.get('/api/locations/', async (req, res) => {
-    console.log("lancement de la connexion");
+app.get('/api/locations/:ID_Utilisateur', async (req, res) => {
+    const ID_Utilisateur = req.params.ID_Utilisateur;
     const conn = await pool.getConnection();
-    console.log("lancement de la requete");
-    const rows = await conn.query("SELECT * FROM locations");
-    console.log(rows);
+    const rows = await conn.query("SELECT * FROM locations WHERE ID_Utilisateur = ?", [ID_Utilisateur]);
     res.status(200).json(rows);
 });
+
 // app.post('/api/locations/:id', async (req, res) => {
 //     try {
-//       // Supposons que vous recevez ces données du front-end
+//
 //       const { ID_Utilisateur, ID_Jeu, Note, Commentaire } = req.body;
-  
-//       // Ajoutez ces données à la table locations dans la base de données
 //       await pool.query(
 //         'INSERT INTO locations (ID_Utilisateur, ID_Jeu, Note, Commentaire) VALUES (?, ?, ?, ?)',
 //         [ID_Utilisateur, ID_Jeu, Note, Commentaire]
@@ -148,7 +146,47 @@ app.get('/api/locations/', async (req, res) => {
 //       res.status(500).json({ message: 'Erreur lors de la location du jeu' });
 //     }
 //   });
-  
+
+// Cette route vous permet de modifier un utilisateur en fonction de l'id passé en paramètre de l'URL avec :id.
+app.put('/api/utilisateur/:id', async (req, res) => {
+    let conn;
+    const id = req.params.id;
+
+    try {
+        const { Nom_Utilisateur, Email, Mot_de_passe } = req.body;
+        console.log("lancement de la connexion");
+        conn = await pool.getConnection();
+        console.log("lancement de la requête PUT");
+        const rows = await conn.query('UPDATE `Utiilisateurs` SET `Nom_Utilisateur` = ?, `Email` = ?, `Mot_de_passe` = ? WHERE  `ID_Utilisateur` = ?;', [Nom_Utilisateur, Email, Mot_de_passe, ID_Utilisateur]);
+        res.status(200).json({ message: 'Utilisateur bien modifié !' });
+    } catch (err) {
+        res.status(400).json({ message: 'Erreur requête lors de la modification de l\'utilisateur !' });
+    } finally {
+        if (conn) {
+            conn.release();
+        }
+    }
+});
+// Cette route vous permet de modifier une location en fonction de l'id passé en paramètre de l'URL avec :id.
+app.put('/api/locations/:id', async (req, res) => {
+    let conn;
+    let ID_Location = req.params.id;
+    try {
+        let { Note, Commentaire } = req.body;
+        console.log("lancement de la connexion");
+        conn = await pool.getConnection();
+        console.log("lancement de la requête PUT");
+        const rows = await conn.query('UPDATE `locations` SET `Note` = ?, `Commentaire` = ?, `Date_Location` = ?, `Id_Jeu` = ?, `Id_Utilisateur` = ? WHERE  `ID_Location` = ?;', [Note, Commentaire, Date_Location, Id_Jeu, Id_Utilisateur, ID_Location]);
+        res.status(200).json({ message: 'Location bien modifiée !' });
+    } catch (err) {
+        res.status(400).json({ message: 'Erreur requête lors de la modification de la location !' });
+    } finally {
+        if (conn) {
+            conn.release();
+        }
+    }
+});
+
 
 
 app.listen(3000, () => {

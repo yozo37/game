@@ -21,7 +21,6 @@ function Header() {
           <li>
             <Link to="/jeu">Liste des Jeux</Link>
           </li>
-          {/* Ajoutez un lien vers la page du panier ici */}
           <li>
             <Link to="/panier">Panier</Link>
           </li>
