@@ -21,12 +21,11 @@ app.get('/api/jeu/', async (req, res) => {
     console.log(rows);
     res.status(200).json(rows);
 });
-
-app.get('/api/utilisateurs', async (req, res) => {
+app.get('/api/utilisateurs/', async (req, res) => {
     console.log("lancement de la connexion");
     const conn = await pool.getConnection();
     console.log("lancement de la requete");
-    const rows = await conn.query("SELECT * FROM utilisateurs");
+    const rows = await conn.query("SELECT * FROM jeu");
     console.log(rows);
     res.status(200).json(rows);
 });
@@ -44,19 +43,51 @@ app.post('/api/utilisateurs/', async (req, res) => {
         const hashedPassword = await bcrypt.hash(Mot_de_passe, 10);
 
         const conn = await pool.getConnection();
-        await conn.beginTransaction();
+        const result = await conn.query('INSERT INTO Utilisateurs (Nom_Utilisateur, Email, Mot_de_passe) VALUES (?, ?, ?)', [Nom_Utilisateur, Email, hashedPassword]);
+
+        const IDUtilisateur = Number(result.insertId);
+
+        await conn.release();
+
+        res.status(201).json({ ID_Utilisateur: IDUtilisateur, message: 'User created successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/api/login', async (req, res) => {
+    try {
+        const { Nom_Utilisateur, Mot_de_passe } = req.body;
+
+        if (!Nom_Utilisateur || !Mot_de_passe) {
+            return res.status(400).json({ error: 'Nom_Utilisateur and Mot_de_passe are required.' });
+        }
+
+        const conn = await pool.getConnection();
 
         try {
-            const result = await conn.query('INSERT INTO Utilisateurs (Nom_Utilisateur, Email, Mot_de_passe) VALUES (?, ?, ?)', [Nom_Utilisateur, Email, hashedPassword]);
+            const result = await conn.query('SELECT * FROM Utilisateurs WHERE Nom_Utilisateur = ?', [Nom_Utilisateur]);
 
-            const IDUtilisateur = Number(result.insertId);
+            console.log('Query Result:', result);
 
-            await conn.commit();
+            if (result.length === 0) {
+                return res.status(401).json({ error: 'Invalid Nom_Utilisateur or Mot_de_passe.' });
+            }
 
-            res.status(201).json({ ID_Utilisateur: IDUtilisateur, message: 'User created successfully.' });
-        } catch (error) {
-            await conn.rollback();
-            throw error;
+            const user = result[0];
+            console.log('Entered Password:', Mot_de_passe);
+            console.log('Stored Hashed Password:', user.Mot_de_passe);
+
+            const isPasswordValid = await bcrypt.compare(Mot_de_passe, user.Mot_de_passe);
+
+            console.log('Password Comparison Result:', isPasswordValid);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Invalid Nom_Utilisateur or Mot_de_passe.' });
+            }
+
+            res.status(200).json({ message: 'Login successful.' });
         } finally {
             await conn.release();
         }
@@ -65,32 +96,7 @@ app.post('/api/utilisateurs/', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
-app.post('/api/connexion', async (req, res) => {
-    try {
-      const { ID_utilisateur } = req.body;
-  
-      if (!ID_utilisateur) {
-        return res.status(400).json({ error: 'User ID is required.' });
-      }
-  
-      // Vérifier si l'utilisateur avec cet ID existe dans la base de données
-      const conn = await pool.getConnection();
-      const result = await conn.query('SELECT * FROM Utilisateurs WHERE ID_Utilisateur = ?', [ID_utilisateur]);
-  
-      if (result.length === 0) {
-        return res.status(404).json({ error: 'User not found.' });
-      }
-  
-      // Ajoutez ici le code pour gérer la connexion réussie, par exemple, retourner un message de réussite.
-      res.status(200).json({ message: 'User is connected.' });
-  
-    } catch (err) {
-      console.error(err);
-      res.status(500).send('Internal Server Error');
-    }
-  });
-app.get('/api/locations', async (req, res) => {
+app.get('/api/locations/', async (req, res) => {
     console.log("lancement de la connexion");
     const conn = await pool.getConnection();
     console.log("lancement de la requete");
@@ -98,28 +104,7 @@ app.get('/api/locations', async (req, res) => {
     console.log(rows);
     res.status(200).json(rows);
 });
-app.post('/api/locations/:id', async (req, res) => {
-    try {
-      const ID_Utilisateur = req.params.id; // Récupérer l'ID de l'utilisateur depuis les paramètres de l'URL
-      const { ID_Jeu, Note, Commentaire,Date_Location } = req.body; // Récupérer d'autres données depuis le corps de la requête
-  
-      // Vérifier si l'utilisateur et le jeu existent avant de procéder à la location
-      // (vous pouvez ajouter des vérifications supplémentaires selon vos besoins)
-  
-      // Insérer la nouvelle location dans la table "locations"
-      const result = await pool.query(
-        'INSERT INTO locations (Date_Location, ID_Jeu, ID_Utilisateur, Note, Commentaire) VALUES (CURDATE(), ?, ?, ?, ?)',
-        [ID_Jeu, ID_Utilisateur, Note, Commentaire,Date_Location]
-      );
-  
-      // Envoyer une réponse réussie
-      res.status(201).json({ message: 'Location réussie', location: result.insertId });
-    } catch (error) {
-      console.error('Erreur lors de la location du jeu :', error);
-      res.status(500).json({ message: 'Erreur lors de la location du jeu' });
-    }
-  });
-  
+
 
 
 app.listen(3000, () => {
