@@ -25,10 +25,18 @@ app.get('/api/utilisateurs/', async (req, res) => {
     console.log("lancement de la connexion");
     const conn = await pool.getConnection();
     console.log("lancement de la requete");
-    const rows = await conn.query("SELECT * FROM jeu");
+    const rows = await conn.query("SELECT * FROM utilisateurs");
     console.log(rows);
     res.status(200).json(rows);
 });
+app.get('/api/utilisateurs/:id', async (req, res) => {
+    console.log("lancement de la connexion");
+    const conn = await pool.getConnection();
+    console.log("lancement de la requete");
+    const rows = await conn.query("SELECT * FROM Utilisateurs WHERE ID_Utilisateur = ?", [req.params.id]);
+    console.log(rows);
+    res.status(200).json(rows);
+})
 
 app.post('/api/utilisateurs/', async (req, res) => {
     console.log(req.body);

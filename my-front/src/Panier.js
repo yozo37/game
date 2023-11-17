@@ -9,7 +9,7 @@ function Panier() {
   useEffect(() => {
     const fetchJeuxLoues = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/jeu/${ID_Utilisateur}`);
+        const response = await axios.get(`http://localhost:3000/api/locations/${ID_Utilisateur}`);
         setJeuxLoues(response.data);
       } catch (error) {
         console.error('Erreur lors de la récupération des jeux loués :', error);

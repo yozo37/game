@@ -1,27 +1,36 @@
+// Jeu.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Navbar from './Navbar';
 
 function Jeu() {
   const [jeux, setJeux] = useState([]);
+  const [filteredJeux, setFilteredJeux] = useState([]);
 
   useEffect(() => {
-    // Fonction pour récupérer tous les jeux depuis l'API
     const fetchJeux = async () => {
       try {
         const response = await axios.get('http://localhost:3000/api/jeu');
         setJeux(response.data);
+        setFilteredJeux(response.data);
       } catch (error) {
         console.error('Erreur lors de la récupération des jeux :', error);
       }
     };
 
-    // Appeler la fonction pour récupérer les jeux lors du chargement du composant
     fetchJeux();
-  }, []); // Le tableau vide en tant que dépendance signifie que cela ne se déclenchera qu'une fois après le montage initial
+  }, []);
+
+  const handleSearch = (searchText) => {
+    const filtered = jeux.filter((jeu) => jeu.ID_jeu.includes(searchText));
+    setFilteredJeux(filtered);
+  };
 
   return (
     <div>
       <h2>Liste des Jeux</h2>
+      <Navbar onSearch={handleSearch} />
+
       <table>
         <thead>
           <tr>
@@ -32,7 +41,7 @@ function Jeu() {
           </tr>
         </thead>
         <tbody>
-          {jeux.map((jeu) => (
+          {filteredJeux.map((jeu) => (
             <tr key={jeu.ID_jeu}>
               <td>{jeu.ID_jeu}</td>
               <td>{jeu.Nom_jeu}</td>
@@ -47,4 +56,3 @@ function Jeu() {
 }
 
 export default Jeu;
-

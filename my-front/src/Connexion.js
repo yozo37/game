@@ -10,7 +10,7 @@ function Connexion() {
 
     const data = { Email, Mot_de_passe };
 
-    axios.post('http://localhost:3000/api/connexion', data)
+    axios.post('http://localhost:3000/api/login', data)
       .then(() => {
         console.log('Utilisateur connecté');
         // Ajoutez ici le code pour gérer la connexion réussie, par exemple, redirection vers une nouvelle page.
