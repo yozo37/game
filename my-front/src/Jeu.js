@@ -1,11 +1,11 @@
-// Jeu.js
+// Jeu.js (votre composant React)
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Navbar from './Navbar';
 
 function Jeu() {
   const [jeux, setJeux] = useState([]);
   const [filteredJeux, setFilteredJeux] = useState([]);
+  const [nomRecherche, setNomRecherche] = useState('');
 
   useEffect(() => {
     const fetchJeux = async () => {
@@ -21,20 +21,30 @@ function Jeu() {
     fetchJeux();
   }, []);
 
-  const handleSearch = (searchText) => {
-    const filtered = jeux.filter((jeu) => jeu.ID_jeu.includes(searchText));
-    setFilteredJeux(filtered);
+  const handleSearch = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/recherche/${nomRecherche}`);
+      setFilteredJeux(response.data);
+    } catch (error) {
+      console.error('Erreur lors de la recherche :', error);
+    }
   };
 
   return (
     <div>
       <h2>Liste des Jeux</h2>
-      <Navbar onSearch={handleSearch} />
-
+      <div>
+        <input
+          type="text"
+          placeholder="Rechercher par nom"
+          value={nomRecherche}
+          onChange={(e) => setNomRecherche(e.target.value)}
+        />
+        <button onClick={handleSearch}>Rechercher</button>
+      </div>
       <table>
         <thead>
           <tr>
-            <th>ID</th>
             <th>Nom du Jeu</th>
             <th>Genre</th>
             <th>Date de sortie</th>
@@ -43,7 +53,6 @@ function Jeu() {
         <tbody>
           {filteredJeux.map((jeu) => (
             <tr key={jeu.ID_jeu}>
-              <td>{jeu.ID_jeu}</td>
               <td>{jeu.Nom_jeu}</td>
               <td>{jeu.Genre}</td>
               <td>{jeu.Date_sortie}</td>
@@ -56,3 +65,5 @@ function Jeu() {
 }
 
 export default Jeu;
+
+

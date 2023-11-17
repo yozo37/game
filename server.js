@@ -21,6 +21,26 @@ app.get('/api/jeu/', async (req, res) => {
     console.log(rows);
     res.status(200).json(rows);
 });
+
+app.get('/api/recherche/:nom', async (req, res) => {
+    console.log("Lancement de la connexion");
+    const conn = await pool.getConnection();
+    console.log("Lancement de la requête");
+    
+    try {
+        // Utilisez le nom du jeu comme paramètre dans la requête SQL
+        const rows = await conn.query("SELECT * FROM jeu WHERE Nom_jeu = ?", [req.params.nom]);
+        console.log(rows);
+        res.status(200).json(rows);
+    } catch (err) {
+        console.error("Erreur lors de l'exécution de la requête :", err);
+        res.status(500).send("Erreur serveur");
+    } finally {
+        // N'oubliez pas de libérer la connexion une fois la requête terminée
+        conn.release();
+    }
+});
+
 app.get('/api/utilisateurs/', async (req, res) => {
     console.log("lancement de la connexion");
     const conn = await pool.getConnection();
@@ -112,7 +132,25 @@ app.get('/api/locations/', async (req, res) => {
     console.log(rows);
     res.status(200).json(rows);
 });
-
+// Ajoutez cette route dans votre fichier contenant les routes (par exemple, routes.js)
+app.post('/api/location/:id', async (req, res) => {
+    try {
+      // Supposons que vous recevez ces données du front-end
+      const { ID_Utilisateur, ID_Jeu, Note, Commentaire } = req.body;
+  
+      // Ajoutez ces données à la table locations dans la base de données
+      await pool.query(
+        'INSERT INTO locations (ID_Utilisateur, ID_Jeu, Note, Commentaire) VALUES (?, ?, ?, ?)',
+        [ID_Utilisateur, ID_Jeu, Note, Commentaire]
+      );
+  
+      res.status(201).json({ message: 'Jeu loué avec succès' });
+    } catch (error) {
+      console.error('Erreur lors de la location du jeu :', error);
+      res.status(500).json({ message: 'Erreur lors de la location du jeu' });
+    }
+  });
+  
 
 
 app.listen(3000, () => {
