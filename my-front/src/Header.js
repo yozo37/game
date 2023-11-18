@@ -3,15 +3,27 @@ import { Link } from 'react-router-dom';
 
 function Header() {
   const headerStyle = {
-    backgroundColor: 'yellow',
+    backgroundColor: '#ECF39E',
     padding: '10px',
     marginBottom: '20px',
+    textAlign: 'center',
+  };
+
+  const h1Style = {
+    margin: 0,
+    color: '#333',
+  };
+
+  const listStyle = {
+    textAlign: 'left',
+    paddingLeft: 0,
   };
 
   return (
     <header style={headerStyle}>
+      <h1 style={h1Style}>Accueil</h1>
       <nav>
-        <ul>
+        <ul style={listStyle}>
           <li>
             <Link to="/inscription">Inscription</Link>
           </li>
@@ -31,3 +43,5 @@ function Header() {
 }
 
 export default Header;
+
+

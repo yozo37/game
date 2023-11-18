@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 app.use(express.json());
-require('dotenv').config();
+require('dotenv').config(); // Charge les variables d'environnement depuis un fichier .env
 let cors = require('cors');
 const bcrypt = require('bcrypt');
 const mariadb = require('mariadb');
@@ -12,15 +12,13 @@ const pool = mariadb.createPool({
     password: process.env.DB_PWD,
 });
 
-app.use(cors());
+app.use(cors()); // Active CORS pour permettre les requêtes depuis n'importe quel domaine
 
+//  pour récupérer tous les jeux
 app.get('/api/jeu/', async (req, res) => {
     try {
-        console.log("lancement de la connexion");
         const conn = await pool.getConnection();
-        console.log("lancement de la requete");
         const rows = await conn.query("SELECT * FROM jeu");
-        console.log(rows);
         res.status(200).json(rows);
     } catch (error) {
         console.error(error);
@@ -28,13 +26,11 @@ app.get('/api/jeu/', async (req, res) => {
     }
 });
 
+//  pour rechercher un jeu par son nom
 app.get('/api/recherche/:nom', async (req, res) => {
     try {
-        console.log("Lancement de la connexion");
         const conn = await pool.getConnection();
-        console.log("Lancement de la requête");
         const rows = await conn.query("SELECT * FROM jeu WHERE Nom_jeu = ?", [req.params.nom]);
-        console.log(rows);
         res.status(200).json(rows);
     } catch (err) {
         console.error("Erreur lors de l'exécution de la requête :", err);
@@ -43,44 +39,43 @@ app.get('/api/recherche/:nom', async (req, res) => {
         conn.release();
     }
 });
-// Cette route vous permet de récupérer l'ensemble des utilisateurs
+
+//  pour récupérer tous les utilisateurs
 app.get('/api/utilisateurs/', async (req, res) => {
     try {
-        console.log("lancement de la connexion");
         const conn = await pool.getConnection();
-        console.log("lancement de la requete");
         const rows = await conn.query("SELECT * FROM utilisateurs");
-        console.log(rows);
         res.status(200).json(rows);
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
 });
-// Cette route vous permet de récupérer un utilisateurs avec son :id
+
+//  pour récupérer un utilisateur par son ID
 app.get('/api/utilisateurs/:id', async (req, res) => {
     try {
-        console.log("lancement de la connexion");
         const conn = await pool.getConnection();
-        console.log("lancement de la requete");
-        const rows = await conn.query("SELECT * FROM Utilisateurs WHERE ID_Utilisateur = ?", [req.params.id]);
-        console.log(rows);
-        res.status(200).json(rows);
+        const [user] = await conn.query("SELECT * FROM Utilisateurs WHERE ID_Utilisateur = ?", [req.params.id]);
+        res.status(200).json(user);
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
 });
 
+//  pour créer un nouvel utilisateur
 app.post('/api/utilisateurs/', async (req, res) => {
     try {
-        console.log(req.body);
+        
         const { Nom_Utilisateur, Email, Mot_de_passe } = req.body;
 
+        // Vérification des données requises
         if (!Nom_Utilisateur || !Email || !Mot_de_passe) {
             return res.status(400).json({ error: 'Nom_Utilisateur, email, and Mot_de_passe are required.' });
         }
 
+        // Hash du mot de passe
         const hashedPassword = await bcrypt.hash(Mot_de_passe, 10);
 
         const conn = await pool.getConnection();
@@ -94,11 +89,14 @@ app.post('/api/utilisateurs/', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-//Cette route permet de connecter notre utilisateur en comparant avec la base de données
+
+//  pour l'authentification d'un utilisateur
 app.post('/api/login', async (req, res) => {
     try {
+        // Extraction des données du corps de la requête
         const { Nom_Utilisateur, Mot_de_passe } = req.body;
 
+        // Vérification des données requises
         if (!Nom_Utilisateur || !Mot_de_passe) {
             return res.status(400).json({ error: 'Nom_Utilisateur and Mot_de_passe are required.' });
         }
@@ -108,26 +106,16 @@ app.post('/api/login', async (req, res) => {
         try {
             const result = await conn.query('SELECT * FROM Utilisateurs WHERE Nom_Utilisateur = ?', [Nom_Utilisateur]);
 
-            console.log('Query Result:', result);
-
             if (result.length === 0) {
                 return res.status(401).json({ error: 'Invalid Nom_Utilisateur or Mot_de_passe.' });
             }
 
             const user = result[0];
-            console.log('User Object:', user);
-            console.log('Entered Password:', Mot_de_passe);
-            console.log('Stored Hashed Password:', user.Mot_de_passe);
 
+            // Comparaison des mots de passe
             const isPasswordValid = await bcrypt.compare(Mot_de_passe, user.Mot_de_passe);
 
-            console.log('Password Comparison Result:', isPasswordValid);
-
             if (!isPasswordValid) {
-                console.error('Password comparison failed. Details:', {
-                    enteredPassword: Mot_de_passe,
-                    storedPassword: user.Mot_de_passe,
-                });
                 return res.status(401).json({ error: 'Invalid Nom_Utilisateur or Mot_de_passe.' });
             }
 
@@ -141,119 +129,128 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-
+//  pour récupérer toutes les locations
 app.get('/api/locations/', async (req, res) => {
     try {
-        console.log("lancement de la connexion");
         const conn = await pool.getConnection();
-        console.log("lancement de la requete");
         const rows = await conn.query("SELECT * FROM locations");
-        console.log(rows);
         res.status(200).json(rows);
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
 });
+
+//  pour supprimer un utilisateur par son ID
 app.delete('/api/utilisateurs/:id', async (req, res) => {
-    let conn
-    let id = req.params.id
-    console.log(id);
-    try {
-        console.log("lancement de la connexion")
-        conn = await pool.getConnection();
-        console.log("lancement de la requête DELETE")
-        const result = await conn.query("DELETE * FROM Utilisateurs WHERE ID_Utilisateur = ?", [req.params.id]);
-        res.status(200).json({ message: 'utilisateur bien supprimée !' })
+    let conn;
+    let id = req.params.id;
 
-    }
-    catch (err) {
-        res.status(400).json({ message: 'Erreur requête lors de la suppression !' })
-    }
-    finally {
+    try {
+        conn = await pool.getConnection();
+        const result = await conn.query("DELETE FROM Utilisateurs WHERE ID_Utilisateur = ?", [req.params.id]);
+        res.status(200).json({ message: 'Utilisateur bien supprimé !' });
+    } catch (err) {
+        res.status(400).json({ message: 'Erreur requête lors de la suppression !' });
+    } finally {
         if (conn) {
-            conn.release(); // Libérer la connexion à la base de données.
+            conn.release();
         }
     }
-})
+});
+
+//  pour supprimer une location par son ID
 app.delete('/api/locations/:id', async (req, res) => {
-    let conn
-    let id = req.params.id
-    console.log(id);
-    try {
-        console.log("lancement de la connexion")
-        conn = await pool.getConnection();
-        console.log("lancement de la requête DELETE")
-        const result = await conn.query("DELETE * FROM Utilisateurs WHERE ID_locations = ?", [req.params.id]);
-        res.status(200).json({ message: 'locations bien supprimée !' })
+    let conn;
+    let id = req.params.id;
 
-    }
-    catch (err) {
-        res.status(400).json({ message: 'Erreur requête lors de la suppression !' })
-    }
-    finally {
+    try {
+        conn = await pool.getConnection();
+        const result = await conn.query("DELETE FROM Locations WHERE ID_locations = ?", [req.params.id]);
+        res.status(200).json({ message: 'Location bien supprimée !' });
+    } catch (err) {
+        res.status(400).json({ message: 'Erreur requête lors de la suppression !' });
+    } finally {
         if (conn) {
-            conn.release(); // Libérer la connexion à la base de données.
+            conn.release();
         }
     }
-})
-app.delete('/api/locations/:id', async (req, res) => {
-    let conn
-    let id = req.params.id
-    console.log(id);
-    try {
-        console.log("lancement de la connexion")
-        conn = await pool.getConnection();
-        console.log("lancement de la requête DELETE")
-        const result = await conn.query("DELETE * FROM Utilisateurs WHERE ID_locations = ?", [req.params.id]);
-        res.status(200).json({ message: 'locations bien supprimée !' })
+});
 
-    }
-    catch (err) {
-        res.status(400).json({ message: 'Erreur requête lors de la suppression !' })
-    }
-    finally {
-        if (conn) {
-            conn.release(); // Libérer la connexion à la base de données.
-        }
-    }
-})
+// pour supprimer un jeu par son ID
 app.delete('/api/jeu/:id', async (req, res) => {
-    let conn
-    let id = req.params.id
-    console.log(id);
+    let conn;
+    let id = req.params.id;
+
     try {
-        console.log("lancement de la connexion")
         conn = await pool.getConnection();
-        console.log("lancement de la requête DELETE")
-        const result = await conn.query("DELETE * FROM Utilisateurs WHERE ID_jeu = ?", [req.params.id]);
-        res.status(200).json({ message: 'jeu bien supprimée !' })
-
-    }
-    catch (err) {
-        res.status(400).json({ message: 'Erreur requête lors de la suppression !' })
-    }
-    finally {
-        if (conn) {
-            conn.release(); // Libérer la connexion à la base de données.
+        const result = await conn.query("DELETE FROM Jeu WHERE ID_jeu = ?", [
+            req.params.id]);
+            res.status(200).json({ message: 'Jeu bien supprimé !' });
+        } catch (err) {
+            res.status(400).json({ message: 'Erreur requête lors de la suppression !' });
+        } finally {
+            if (conn) {
+                conn.release();
+            }
         }
-    }
-})
-app.get('/api/locations/:ID_Utilisateur', async (req, res) => {
-    try {
-        console.log("lancement de la connexion");
-        const conn = await pool.getConnection();
-        console.log("lancement de la requete");
-        const rows = await conn.query("SELECT * FROM locations WHERE ID_Utilisateur = ?", [req.params.ID_Utilisateur]);
-        console.log(rows);
-        res.status(200).json(rows);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-
-app.listen(3000, () => {
-    console.log("Serveur a l'ecoute ") ;
-});
+    });
+    
+    // pour récupérer les locations d'un utilisateur par son ID
+    app.get('/api/locations/:ID_Utilisateur', async (req, res) => {
+        try {
+            const conn = await pool.getConnection();
+            const rows = await conn.query("SELECT * FROM Locations WHERE ID_Utilisateur = ?", [req.params.ID_Utilisateur]);
+            res.status(200).json(rows);
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Internal Server Error');
+        } finally {
+            if (conn) {
+                conn.release();
+            }
+        }
+    });
+    
+    // pour créer ou mettre à jour une location
+    app.post('/locations/infos', async (req, res) => {
+        const { jeuId, utilisateurId, notes, commentaire } = req.body;
+    
+        try {
+            const conn = await pool.getConnection();
+    
+            // Récupération de la date actuelle
+            const dateQuery = 'SELECT Date_Location FROM Locations WHERE ID_Jeu = ? ORDER BY Date_Location DESC LIMIT 1';
+            const dateResult = await conn.query(dateQuery, [jeuId]);
+    
+            // Utilisation de la date actuelle ou création d'une nouvelle date
+            const dateDebut = dateResult.length > 0 ? dateResult[0].Date_Location : new Date();
+            const dateFin = dateResult.length > 0 ? dateResult[0].Date_Location : new Date();
+    
+            // Vérification de l'existence d'une location à la même date
+            const existingRowQuery = 'SELECT * FROM Locations WHERE ID_Jeu = ? AND Date_Location = ?';
+            const existingRowResult = await conn.query(existingRowQuery, [jeuId, dateDebut]);
+    
+            if (existingRowResult.length > 0) {
+                res.status(409).json({ success: false, message: 'Location already exists' });
+            } else {
+                // Insertion d'une nouvelle location
+                const insertQuery = 'INSERT INTO Locations (Date_Location, ID_Jeu, ID_Utilisateur, Note, Commentaire) VALUES (?, ?, ?, ?, ?)';
+                const insertResult = await conn.query(insertQuery, [dateDebut, jeuId, utilisateurId, notes, commentaire]);
+                res.status(201).json({ success: true, message: 'Location created successfully' });
+            }
+        } catch (error) {
+            console.error('Error creating or updating location:', error);
+            res.status(500).json({ success: false, message: 'Internal Server Error' });
+        } finally {
+            if (conn) {
+                conn.release();
+            }
+        }
+    });
+    
+    // Démarrage du serveur sur le port 3000
+    app.listen(3000, () => {
+        console.log("Serveur à l'écoute sur le port 3000");
+    });
+        

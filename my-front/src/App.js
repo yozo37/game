@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Inscription from './Inscription';
-import Connexion from './Connexion';
-import Jeu from './Jeu';
-import Header from './Header';
-import Panier from './Panier';
+import Inscription from './Inscription.js';
+import Connexion from './Connexion.js';
+import Jeu from './Jeu.js';
+import Header from './Header.js';
+
 
 function App() {
   return (
@@ -16,7 +16,6 @@ function App() {
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/jeu" element={<Jeu />} />
-          <Route path="/panier" element={<Panier />} />
         </Routes>
       </div>
     </Router>
