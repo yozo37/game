@@ -239,6 +239,19 @@ app.delete('/api/jeu/:id', async (req, res) => {
         }
     }
 })
+app.get('/api/locations/:ID_Utilisateur', async (req, res) => {
+    try {
+        console.log("lancement de la connexion");
+        const conn = await pool.getConnection();
+        console.log("lancement de la requete");
+        const rows = await conn.query("SELECT * FROM locations WHERE ID_Utilisateur = ?", [req.params.ID_Utilisateur]);
+        console.log(rows);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 
 app.listen(3000, () => {

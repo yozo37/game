@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './Inscription.css'; // Assurez-vous de créer ce fichier CSS pour styliser votre formulaire
 
 function Inscription() {
-  //  pour stocker les valeurs du formulaire
+  // pour stocker les valeurs du formulaire
   const [Nom_Utilisateur, setNom] = useState('');
-  const [Email, setEmail] = useState('');
   const [Mot_de_passe, setMotDePasse] = useState('');
 
   // Fonction pour gérer la soumission du formulaire
   const handleSubmit = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
 
     // Crée un objet avec les données du formulaire
-    const data = { Email, Mot_de_passe, Nom_Utilisateur };
+    const data = {Mot_de_passe, Nom_Utilisateur };
 
     try {
       // Envoie une requête POST pour créer un nouvel utilisateur
@@ -22,34 +22,29 @@ function Inscription() {
       console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
     }
   };
-// Creation d'un formulaire
+
+  // Création d'un formulaire stylisé
   return (
-    <div>
+    <div className="inscription-container">
       <h2>Inscription</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="inscription-form">
         {/* Champ pour le nom */}
-        <p>
-          <label>Nom :</label>
-          <input type="text" required value={Nom_Utilisateur} onChange={(e) => setNom(e.target.value)} />
-        </p>
-        {/* Champ pour l'email */}
-        <p>
-          <label>Email :</label>
-          <input type="email" required value={Email} onChange={(e) => setEmail(e.target.value)} />
-        </p>
+        <div className="form-group">
+          <label htmlFor="nom">Nom :</label>
+          <input type="text" id="nom" required value={Nom_Utilisateur} onChange={(e) => setNom(e.target.value)} />
+        </div>
         {/* Champ pour le mot de passe */}
-        <p>
-          <label>Mot de passe :</label>
-          <input type="password" required value={Mot_de_passe} onChange={(e) => setMotDePasse(e.target.value)} />
-        </p>
+        <div className="form-group">
+          <label htmlFor="motDePasse">Mot de passe :</label>
+          <input type="password" id="motDePasse" required value={Mot_de_passe} onChange={(e) => setMotDePasse(e.target.value)} />
+        </div>
         {/* Bouton de soumission du formulaire */}
-        <p>
+        <div className="form-group">
           <button type="submit">Soumettre</button>
-        </p>
+        </div>
       </form>
     </div>
   );
 }
 
 export default Inscription;
-

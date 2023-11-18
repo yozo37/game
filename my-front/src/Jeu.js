@@ -4,12 +4,10 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 function Jeu() {
-  // pour stocker la liste complète des jeux, les jeux filtrés et le terme de recherche
   const [jeux, setJeux] = useState([]);
   const [filteredJeux, setFilteredJeux] = useState([]);
   const [nomRecherche, setNomRecherche] = useState('');
 
-  //chargement initial pour récupérer la liste complète des jeux depuis l'API
   useEffect(() => {
     const fetchJeux = async () => {
       try {
@@ -24,7 +22,6 @@ function Jeu() {
     fetchJeux();
   }, []);
 
-  // Fonction pour effectuer la recherche en fonction du nom du jeu
   const handleSearch = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/recherche/${nomRecherche}`);
@@ -34,7 +31,6 @@ function Jeu() {
     }
   };
 
-  // Fonction pour louer un jeu en envoyant une requête POST à l'API avec l'ID du jeu
   const louerJeu = async (jeuId) => {
     try {
       await axios.post(`http://localhost:3000/api/locations/${jeuId}`);
@@ -44,7 +40,6 @@ function Jeu() {
     }
   };
 
- 
   return (
     <div>
       <h2>Liste des Jeux</h2>
@@ -63,10 +58,9 @@ function Jeu() {
             <th>Nom du Jeu</th>
             <th>Genre</th>
             <th>Date de sortie</th>
-            <th>Actions</th>
           </tr>
         </thead>
-        <tbody> 
+        <tbody>
           {filteredJeux.map((jeu) => (
             <tr key={jeu.ID_jeu}>
               <td>{jeu.Nom_jeu}</td>
@@ -86,4 +80,3 @@ function Jeu() {
 }
 
 export default Jeu;
-

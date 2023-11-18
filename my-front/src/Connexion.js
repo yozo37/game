@@ -3,7 +3,7 @@ import axios from 'axios';
 
 function Connexion() {
   // Variables d'état pour stocker les valeurs des champs d'entrée email et mot de passe
-  const [Email, setEmail] = useState('');
+  const [Nom_Utilisateur, setnom] = useState('');
   const [Mot_de_passe, setMotDePasse] = useState('');
 
   // Fonction pour gérer la soumission du formulaire
@@ -11,7 +11,7 @@ function Connexion() {
     e.preventDefault();
 
     // Crée un objet de données avec l'email et le mot de passe
-    const data = { Email, Mot_de_passe };
+    const data = { Nom_Utilisateur, Mot_de_passe };
 
     try {
       // Effectue une requête POST vers le point d'API spécifié avec les données de l'utilisateur
