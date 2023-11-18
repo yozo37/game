@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
+ 
 function Connexion() {
   // Variables d'état pour stocker les valeurs des champs d'entrée email et mot de passe
   const [Nom_Utilisateur, setnom] = useState('');
@@ -35,6 +35,10 @@ function Connexion() {
           <label>Nom :</label>
           <input type="nom" required value={Nom_Utilisateur} onChange={(e) => setnom(e.target.value)} />
         </p>
+        <div className="form-group">
+          <label htmlFor="email">Email :</label>
+          <input type="email" id="email" required value={Email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
         <p>
           <label>Mot de passe : </label>
           <input type="password" required value={Mot_de_passe} onChange={(e) => setMotDePasse(e.target.value)} />

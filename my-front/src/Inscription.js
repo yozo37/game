@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './Inscription.css'; // Assurez-vous de créer ce fichier CSS pour styliser votre formulaire
+import './style.css'; 
 
 function Inscription() {
   // pour stocker les valeurs du formulaire
